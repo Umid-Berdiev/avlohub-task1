@@ -22,7 +22,7 @@ const ObjectId = require("mongodb").ObjectId;
 
 exports.createRandomWorkers = async (req, res) => {
   // return res.json({ randCat });
-  const count = 300;
+  const count = 100000;
   const recursion = async (RECURSION_NUMBER) => {
     if (RECURSION_NUMBER > 0) {
       const randCat = await randomCat();
@@ -81,17 +81,29 @@ exports.createRandomWorkers = async (req, res) => {
 };
 
 exports.createRandomCategories = async (req, res) => {
-  const categoryA = new Category({ title: "A" });
+  const categoryA = new Category({
+    title: "A",
+  });
   categoryA.save();
-  const categoryB = new Category({ title: "B" });
+  const categoryB = new Category({
+    title: "B",
+  });
   categoryB.save();
-  const categoryC = new Category({ title: "C" });
+  const categoryC = new Category({
+    title: "C",
+  });
   categoryC.save();
-  const categoryD = new Category({ title: "D" });
+  const categoryD = new Category({
+    title: "D",
+  });
   categoryD.save();
-  const categoryE = new Category({ title: "E" });
+  const categoryE = new Category({
+    title: "E",
+  });
   categoryE.save();
-  const categoryF = new Category({ title: "F" });
+  const categoryF = new Category({
+    title: "F",
+  });
   categoryF.save();
   res.json("success");
 };
@@ -107,6 +119,7 @@ exports.filterWorkers = async (req, res) => {
     {
       $project: {
         workedYear: 1,
+        name: 1,
         salaryTotal: {
           $sum: [
             "$salary.january",
@@ -120,7 +133,9 @@ exports.filterWorkers = async (req, res) => {
       },
     },
     {
-      $sort: { salaryTotal: -1 },
+      $sort: {
+        salaryTotal: -1,
+      },
     },
     {
       $limit: 10,
@@ -139,6 +154,7 @@ exports.filterWorkers2 = async (req, res) => {
         title: category,
       },
     },
+
     {
       $lookup: {
         from: "workers",
@@ -149,26 +165,55 @@ exports.filterWorkers2 = async (req, res) => {
             $match: {
               $expr: {
                 $and: [
-                  { $eq: ["$country", country] },
-                  { $eq: ["$workedYear", parseInt(year)] },
+                  {
+                    $eq: ["$country", country],
+                  },
+                  {
+                    $eq: ["$workedYear", parseInt(year)],
+                  },
                 ],
               },
             },
           },
+          // {
+          //   $project: {
+          //     name: 1,
+          //     country: 1,
+          //     workedYear: 1,
+          //     bonusTotal: {
+          //       $sum: [
+          //         "$bonus.january",
+          //         "$bonus.february",
+          //         "$bonus.march",
+          //         "$bonus.april",
+          //         "$bonus.may",
+          //         "$bonus.june",
+          //       ],
+          //     },
+          //   },
+          // },
           {
-            $project: {
-              name: 1,
-              country: 1,
-              workedYear: 1,
-              bonusTotal: {
-                $sum: [
-                  "$bonus.january",
-                  "$bonus.february",
-                  "$bonus.march",
-                  "$bonus.april",
-                  "$bonus.may",
-                  "$bonus.june",
-                ],
+            $group: {
+              _id: null,
+              soni: {
+                $sum: 1,
+              },
+              output: {
+                $push: {
+                  name: "$name",
+                  country: "$country",
+                  workedYear: "$workedYear",
+                  bonusTotal: {
+                    $sum: [
+                      "$bonus.january",
+                      "$bonus.february",
+                      "$bonus.march",
+                      "$bonus.april",
+                      "$bonus.may",
+                      "$bonus.june",
+                    ],
+                  },
+                },
               },
             },
           },
@@ -193,7 +238,9 @@ exports.filterWorkers3 = async (req, res) => {
       $project: {
         name: 1,
         company: 1,
-        ballTotal: { $sum: "$ball" },
+        ballTotal: {
+          $sum: "$ball",
+        },
         salaryTotal: {
           $sum: [
             "$salary.january",
@@ -214,7 +261,9 @@ exports.filterWorkers3 = async (req, res) => {
       },
     },
     {
-      $sort: { salaryTotal: -1 },
+      $sort: {
+        salaryTotal: -1,
+      },
     },
     {
       $limit: 1,
@@ -243,7 +292,9 @@ exports.filterWorkers4 = async (req, res) => {
             $match: {
               $expr: {
                 $and: [
-                  { $in: ["$company", ["Facebook", "Amazon"]] },
+                  {
+                    $in: ["$company", ["Facebook", "Amazon"]],
+                  },
                   // { $eq: ["$workedYear", parseInt(year)] },
                 ],
               },
@@ -251,8 +302,6 @@ exports.filterWorkers4 = async (req, res) => {
           },
           {
             $project: {
-              // country: 1,
-              // category: 1,
               company: 1,
               name: 1,
               bonusTotal: {
@@ -274,7 +323,9 @@ exports.filterWorkers4 = async (req, res) => {
               default: "Other",
               output: {
                 // natijani chiqarish
-                count: { $sum: 1 },
+                count: {
+                  $sum: 1,
+                },
                 bonusOwners: {
                   $push: {
                     name: "$name",
@@ -296,14 +347,20 @@ exports.filterWorkers4 = async (req, res) => {
 
 exports.filterWorkers5 = async (req, res) => {
   const { companies } = req.query;
-  console.log({ companies });
+  console.log({
+    companies,
+  });
   const pipeline = [
     {
       $match: {
         $expr: {
           $and: [
-            { $in: ["$company", companies] },
-            { $eq: ["$specialty", "mentor"] },
+            {
+              $in: ["$company", companies],
+            },
+            {
+              $eq: ["$specialty", "mentor"],
+            },
           ],
         },
       },
@@ -325,7 +382,9 @@ exports.filterWorkers5 = async (req, res) => {
       },
     },
     {
-      $sort: { salaryTotal: -1 },
+      $sort: {
+        salaryTotal: -1,
+      },
     },
     {
       $group: {
@@ -354,8 +413,12 @@ exports.filterWorkers6 = async (req, res) => {
             $match: {
               $expr: {
                 $and: [
-                  { $eq: ["$country", country] },
-                  { $in: ["$specialty", ["driver", "doctor"]] },
+                  {
+                    $eq: ["$country", country],
+                  },
+                  {
+                    $in: ["$specialty", ["driver", "doctor"]],
+                  },
                 ],
               },
             },
@@ -369,7 +432,9 @@ exports.filterWorkers6 = async (req, res) => {
             },
           },
           {
-            $sort: { "salary.january": 1 },
+            $sort: {
+              "salary.january": 1,
+            },
           },
           {
             $limit: 1,
@@ -380,8 +445,12 @@ exports.filterWorkers6 = async (req, res) => {
             $match: {
               $expr: {
                 $and: [
-                  { $eq: ["$country", country] },
-                  { $in: ["$specialty", ["driver", "doctor"]] },
+                  {
+                    $eq: ["$country", country],
+                  },
+                  {
+                    $in: ["$specialty", ["driver", "doctor"]],
+                  },
                 ],
               },
             },
@@ -395,7 +464,9 @@ exports.filterWorkers6 = async (req, res) => {
             },
           },
           {
-            $sort: { "salary.march": 1 },
+            $sort: {
+              "salary.march": 1,
+            },
           },
           {
             $limit: 1,
