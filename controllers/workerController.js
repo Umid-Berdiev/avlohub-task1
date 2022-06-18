@@ -1,5 +1,8 @@
 const _ = require("underscore");
-const { Category, Worker } = require("../models/workerModel");
+const {
+  Category,
+  Worker
+} = require("../models/workerModel");
 
 const {
   randomNumber,
@@ -109,9 +112,10 @@ exports.createRandomCategories = async (req, res) => {
 };
 
 exports.filterWorkers = async (req, res) => {
-  const { year } = req.query;
-  const pipeline = [
-    {
+  const {
+    year
+  } = req.query;
+  const pipeline = [{
       $match: {
         workedYear: parseInt(year),
       },
@@ -147,9 +151,12 @@ exports.filterWorkers = async (req, res) => {
 };
 
 exports.filterWorkers2 = async (req, res) => {
-  const { country, category, year } = req.query;
-  const pipeline = [
-    {
+  const {
+    country,
+    category,
+    year
+  } = req.query;
+  const pipeline = [{
       $match: {
         title: category,
       },
@@ -160,12 +167,10 @@ exports.filterWorkers2 = async (req, res) => {
         from: "workers",
         localField: "_id",
         foreignField: "category",
-        pipeline: [
-          {
+        pipeline: [{
             $match: {
               $expr: {
-                $and: [
-                  {
+                $and: [{
                     $eq: ["$country", country],
                   },
                   {
@@ -228,8 +233,7 @@ exports.filterWorkers2 = async (req, res) => {
 };
 
 exports.filterWorkers3 = async (req, res) => {
-  const pipeline = [
-    {
+  const pipeline = [{
       $match: {
         company: "Facebook",
       },
@@ -275,9 +279,10 @@ exports.filterWorkers3 = async (req, res) => {
 };
 
 exports.filterWorkers4 = async (req, res) => {
-  const { category } = req.query;
-  const pipeline = [
-    {
+  const {
+    category
+  } = req.query;
+  const pipeline = [{
       $match: {
         title: category,
       },
@@ -287,12 +292,10 @@ exports.filterWorkers4 = async (req, res) => {
         from: "workers",
         localField: "_id",
         foreignField: "category",
-        pipeline: [
-          {
+        pipeline: [{
             $match: {
               $expr: {
-                $and: [
-                  {
+                $and: [{
                     $in: ["$company", ["Facebook", "Amazon"]],
                   },
                   // { $eq: ["$workedYear", parseInt(year)] },
@@ -346,136 +349,339 @@ exports.filterWorkers4 = async (req, res) => {
 };
 
 exports.filterWorkers5 = async (req, res) => {
-  const { companies } = req.query;
-  console.log({
-    companies,
-  });
-  const pipeline = [
-    {
-      $match: {
-        $expr: {
-          $and: [
-            {
-              $in: ["$company", companies],
+  // const { companies } = req.query;
+  // console.log({
+  //   companies,
+  // });
+  // const pipeline = [
+  //   {
+  //     $match: {
+  //       $expr: {
+  //         $and: [
+  //           {
+  //             $in: ["$company", companies],
+  //           },
+  //           {
+  //             $eq: ["$specialty", "mentor"],
+  //           },
+  //         ],
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       name: 1,
+  //       company: 1,
+  //       salaryTotal: {
+  //         $sum: [
+  //           "$salary.january",
+  //           "$salary.february",
+  //           "$salary.march",
+  //           "$salary.april",
+  //           "$salary.may",
+  //           "$salary.june",
+  //         ],
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $sort: {
+  //       salaryTotal: -1,
+  //     },
+  //   },
+  //   {
+  //     $group: {
+  //       _id: "$company",
+  //       worker: {
+  //         $push: {
+  //           name: "$name",
+  //           salary: "$salaryTotal",
+  //         },
+  //       },
+  //     },
+  //   },
+  // ];
+
+  // const result = await Worker.aggregate(pipeline);
+  // res.json(result);
+
+
+
+  const pipeline = [{
+    $facet: {
+      Google: [{
+          $match: {
+            company: {
+              $eq: "Google"
             },
-            {
-              $eq: ["$specialty", "mentor"],
-            },
-          ],
-        },
-      },
-    },
-    {
-      $project: {
-        name: 1,
-        company: 1,
-        salaryTotal: {
-          $sum: [
-            "$salary.january",
-            "$salary.february",
-            "$salary.march",
-            "$salary.april",
-            "$salary.may",
-            "$salary.june",
-          ],
-        },
-      },
-    },
-    {
-      $sort: {
-        salaryTotal: -1,
-      },
-    },
-    {
-      $group: {
-        _id: "$company",
-        worker: {
-          $push: {
-            name: "$name",
-            salary: "$salaryTotal",
           },
         },
-      },
+        {
+          $project: {
+            name: 1,
+            company: 1,
+            salaryAmount: {
+              $add: [
+                "$salary.january",
+                "$salary.february",
+                "$salary.march",
+                "$salary.april",
+                "$salary.may",
+                "$salary.june",
+              ],
+            },
+          },
+        },
+        {
+          $sort: {
+            salaryAmount: -1,
+          },
+        },
+        {
+          $limit: 5
+        },
+      ],
+      Twitter: [{
+          $match: {
+            company: {
+              $eq: "Twitter"
+            },
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            company: 1,
+            salaryAmount: {
+              $add: [
+                "$salary.january",
+                "$salary.february",
+                "$salary.march",
+                "$salary.april",
+                "$salary.may",
+                "$salary.june",
+              ],
+            },
+          },
+        },
+        {
+          $sort: {
+            salaryAmount: -1,
+          },
+        },
+        {
+          $limit: 5
+        },
+      ],
+      Amazon: [{
+          $match: {
+            company: {
+              $eq: "Amazon"
+            },
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            company: 1,
+            salaryAmount: {
+              $add: [
+                "$salary.january",
+                "$salary.february",
+                "$salary.march",
+                "$salary.april",
+                "$salary.may",
+                "$salary.june",
+              ],
+            },
+          },
+        },
+        {
+          $sort: {
+            salaryAmount: -1,
+          },
+        },
+        {
+          $limit: 5
+        },
+      ],
     },
-  ];
+  }, ];
 
   const result = await Worker.aggregate(pipeline);
-  res.json(result);
+  res.json({
+    data: result,
+  });
+
 };
 
 exports.filterWorkers6 = async (req, res) => {
-  const { country } = req.query;
-  const pipeline = [
-    {
-      $facet: {
-        by_january: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  {
-                    $eq: ["$country", country],
-                  },
-                  {
-                    $in: ["$specialty", ["driver", "doctor"]],
-                  },
-                ],
-              },
-            },
-          },
-          {
-            $project: {
-              name: 1,
-              country: 1,
-              specialty: 1,
-              "salary.january": 1,
-            },
-          },
-          {
-            $sort: {
-              "salary.january": 1,
-            },
-          },
-          {
-            $limit: 1,
-          },
-        ],
-        by_march: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  {
-                    $eq: ["$country", country],
-                  },
-                  {
-                    $in: ["$specialty", ["driver", "doctor"]],
-                  },
-                ],
-              },
-            },
-          },
-          {
-            $project: {
-              name: 1,
-              country: 1,
-              specialty: 1,
-              "salary.march": 1,
-            },
-          },
-          {
-            $sort: {
-              "salary.march": 1,
-            },
-          },
-          {
-            $limit: 1,
-          },
-        ],
-      },
-    },
-  ];
+  // const {
+  //   country
+  // } = req.query;
+  // const pipeline = [{
+  //   $facet: {
+  //     by_january: [{
+  //         $match: {
+  //           $expr: {
+  //             $and: [{
+  //                 $eq: ["$country", country],
+  //               },
+  //               {
+  //                 $in: ["$specialty", ["driver", "doctor"]],
+  //               },
+  //             ],
+  //           },
+  //         },
+  //       },
+  //       {
+  //         $project: {
+  //           name: 1,
+  //           country: 1,
+  //           specialty: 1,
+  //           "salary.january": 1,
+  //         },
+  //       },
+  //       {
+  //         $sort: {
+  //           "salary.january": 1,
+  //         },
+  //       },
+  //       {
+  //         $limit: 1,
+  //       },
+  //     ],
+  //     by_march: [{
+  //         $match: {
+  //           $expr: {
+  //             $and: [{
+  //                 $eq: ["$country", country],
+  //               },
+  //               {
+  //                 $in: ["$specialty", ["driver", "doctor"]],
+  //               },
+  //             ],
+  //           },
+  //         },
+  //       },
+  //       {
+  //         $project: {
+  //           name: 1,
+  //           country: 1,
+  //           specialty: 1,
+  //           "salary.march": 1,
+  //         },
+  //       },
+  //       {
+  //         $sort: {
+  //           "salary.march": 1,
+  //         },
+  //       },
+  //       {
+  //         $limit: 1,
+  //       },
+  //     ],
+  //   },
+  // }, ];
 
-  const result = await Worker.aggregate(pipeline);
+  // const result = await Worker.aggregate(pipeline);
+  // res.json(result);
+
+
+  const pipeline_month = [{
+      $match: {
+        $and: [{
+            specialty: {
+              $in: ["driver", "doctor"]
+            },
+          },
+          {
+            country: {
+              $eq: "Canada"
+            },
+          },
+        ]
+      }
+    },
+    {
+      $project: {
+        "name": 1,
+        "salary.january": 1,
+        "salary.march": 1,
+        _id: 0,
+      }
+    },
+
+
+
+
+
+    // {
+    //   $sort: {
+    //     "salary.march": 1,
+    //   }
+    // },
+    // {
+    //   $sort: {
+    //     "salary.january": 1
+    //   }
+    // },
+  ]
+
+
+  // const pipeline = [{
+  //   $facet: {
+  //     january: [{
+  //         $match: {
+  //           country: {
+  //             $eq: "Canada"
+  //           },
+  //           specialty: {
+  //             $in: ["driver ", "doctor"]
+  //           },
+  //         },
+  //       },
+  //       {
+  //         $project: {
+  //           name: 1,
+  //           janSalary: "$salary.january",
+  //         },
+  //       },
+  //       {
+  //         $sort: {
+  //           janSalary: 1,
+  //         },
+  //       },
+  //     ],
+  //     march: [{
+  //         $match: {
+  //           country: {
+  //             $eq: "Canada"
+  //           },
+  //           specialty: {
+  //             $in: ["driver", "doctor"]
+  //           },
+  //         },
+  //       },
+  //       {
+  //         $project: {
+  //           name: 1,
+  //           marchSalary: "$salary.march",
+  //         },
+  //       },
+  //       {
+  //         $sort: {
+  //           marchSalary: 1,
+  //         },
+  //       },
+  //     ],
+  //   },
+  // }];
+
+
+
+  const result = await Worker.aggregate(pipeline_month);
   res.json(result);
+
+
 };

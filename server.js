@@ -20,6 +20,6 @@ connection();
 
 app.use("/api/workers", require("./router/workerRouter"));
 
-server.listen(5000, () => {
+server.listen(3000, () => {
   console.log("Server is running");
 });
